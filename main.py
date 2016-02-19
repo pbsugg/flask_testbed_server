@@ -6,7 +6,29 @@ from flask import Flask, jsonify, request
 app = Flask(__name__)
 
 
+environments = {}
 
+@app.route('/env/create', methods=['POST'])
+def create():
+    env_id = request.form['id']
+    if env_id not in environments:
+        environments[env_id] = {}
+    return jsonify(envs=environments.keys())
+
+@app.route('/env/delete', methods=['POST'])
+def delete():
+    env_id = request.form['id']
+    if env_id in environments:
+        del environments[env_id]
+    return jsonify(envs=environments.keys())
+
+@app.route('/env/get', methods=['POST'])
+def getenv():
+    env_id = request.form['id']
+    if env_id in environments:
+        return jsonfy(env=environments[env_id].keys())
+    else:
+        return jsonify(error='Environment does not exist!')
 
 
 @app.route("/", methods=['GET'])
