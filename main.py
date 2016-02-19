@@ -6,6 +6,9 @@ from flask import Flask, jsonify, request
 app = Flask(__name__)
 
 
+
+
+
 @app.route("/", methods=['GET'])
 def greet():
     return 'This is your initial greeting!'
@@ -13,8 +16,17 @@ def greet():
 @app.route("/", methods=['POST'])
 def kernel():
     code_lns = request.form['code'].split('\\n')
-    for line in code_lns: exec(line)
-    return 'Success'
+    #store stdout location
+    old_stdout = sys.stdout
+    #rediect stdout to string buffer
+    sys.stdout = strstdout = StringIO()
+
+    for line in code_lns:
+        exec(line)
+
+    sys.stdout = old_stdout
+
+    return strstdout.getvalue()
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
