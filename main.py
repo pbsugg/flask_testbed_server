@@ -37,18 +37,25 @@ def greet():
 
 @app.route("/", methods=['POST'])
 def kernel():
+    env_id = request.form['id']
+    if env_id not in environments:
+        return jsonify(error='Environment does not exist!')
     code_lns = request.form['code'].split('\\n')
     #store stdout location
     old_stdout = sys.stdout
-    #rediect stdout to string buffer
+    #redirect stdout to string buffer
     sys.stdout = strstdout = StringIO()
-
     for line in code_lns:
-        exec(line)
-
+        try:
+            code = compile(line, '<string>', 'exec')
+            exec code in environments[env_id]
+        except:
+            print(traceback.format_exc())
+            error = True
     sys.stdout = old_stdout
+    if error: return jsonify(error=strstdout.getvalue())
+    else: return jsonify(message=strstdout.getvalue())
 
-    return strstdout.getvalue()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="127.0.0.1", debug=True)
